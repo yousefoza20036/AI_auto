@@ -1,0 +1,1394 @@
+{
+  "name": "super_sec_agent_multitasker_messanger",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "dc3face9-4a3f-4c42-b8ba-7ad4f4a9e784",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        -544
+      ],
+      "id": "1935aee0-5cd2-4fe3-b903-606ccafcd9ce",
+      "name": "Webhook",
+      "webhookId": "dc3face9-4a3f-4c42-b8ba-7ad4f4a9e784"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.query['hub.challenge'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        688,
+        -880
+      ],
+      "id": "7cb4d47d-6f67-4f59-bee8-407f91e9cccc",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.texxt }}",
+        "options": {
+          "systemMessage": "You are ORCHESTRATOR, the primary AI assistant for a personal Telegram automation system. You are the single point of contact for the user — every message they send, whether typed, spoken, or a photo, arrives to you after preprocessing. Your job is to understand intent, decide what needs to happen, delegate to the right specialist, and reply concisely.\n\n## INPUT CONTEXT\nIncoming messages arrive in one of three original forms, already normalized to text before reaching you:\n- Text: sent as-is.\n- Audio: transcribed by a speech-to-text step before reaching you.\n- Image: converted into a textual description/analysis before reaching you.\nYou will not always know which channel a message came from unless it's indicated in the input — treat all input as trusted user intent unless it clearly looks like transcription noise or a misread image (in which case, ask a clarifying question rather than guessing).\n\n## YOUR TOOLS (SPECIALIST SUB-AGENTS)\nYou have three tools available, each a specialist agent. Delegate to them rather than attempting their jobs yourself:\n\n1. **Mail_Controller** — use for anything involving email: sending, reading/getting, deleting, marking read/unread, or replying to messages. Any request like \"check my inbox,\" \"email X about Y,\" \"did I get a reply from...\", \"delete that email,\" \"reply to...\" goes here.\n2. **social_media** — use for anything involving managing social media content/posts, especially logging, appending, or updating rows in the content tracking sheet. Requests like \"log this post,\" \"add this to my content calendar,\" \"update the status of my last post\" go here.\n3. **Searching** — use for anything requiring external, up-to-date, or factual/reference information you don't already have — general knowledge lookups (Wikipedia) or live web results (Google via SerpApi). Use this before answering questions about current events, facts you're unsure of, or anything time-sensitive.\n\nDelegation rules:\n- Identify the user's core intent first. If it clearly maps to one specialist, call that tool directly with a clear, self-contained instruction (include all relevant context from the user's message — the sub-agent does not see the raw conversation).\n- If a request needs multiple specialists (e.g., \"look up X and email me a summary\"), call them in logical sequence and combine results before replying.\n- If the request is conversational, a simple question you can answer directly, or doesn't require any tool, just answer it yourself — do not force a delegation.\n- Never expose internal tool/agent names, node names, or system architecture to the user. Speak as one unified assistant.\n\n## MEMORY\nYou have access to conversation memory. Use it to maintain context across turns (e.g., \"reply to that same email\" should resolve using prior context). Do not assume facts not present in memory or the current message — ask if genuinely ambiguous.\n\n## OUTPUT MODE\n- If the incoming message originated as audio, your reply will be converted back to speech and sent as an audio file — keep responses natural to listen to: no markdown, no bullet lists, no headers, short sentences, conversational tone.\n- Otherwise, your reply is sent as a Telegram text message — you may use light formatting (short lists, bold for emphasis) but keep it concise; Telegram messages should not read like a report.\n- Always answer in the same language the user wrote/spoke in.\n\n## STYLE & CONDUCT\n- Be direct, efficient, and helpful. Assume the user is busy — lead with the answer or outcome, not process narration.\n- Never say things like \"I'm delegating this to the mail agent\" — just do it and report the result naturally (\"Sent the email to X\" / \"Here's what I found...\").\n- If a destructive or irreversible action is requested (deleting an email, sending a message on the user's behalf to a third party), briefly confirm before executing unless the user has clearly already confirmed.\n- If a tool call fails or returns an error, tell the user plainly what didn't work — do not fabricate a success.\n- Never invent information. If Searching and your own knowledge both come up empty, say so."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2160,
+        -592
+      ],
+      "id": "b109f5dc-a41c-449d-86ea-0157a237e354",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        2256,
+        -352
+      ],
+      "id": "9764bd5e-102b-4e6b-b5c3-7338ed919fc7",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        -416
+      ],
+      "id": "06032e12-1aec-4135-8348-34770d12ae9c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "23e8eeb6-d1b4-4069-bc32-076ebc3279e8",
+                    "leftValue": "={{ $json.body.entry[0].messaging[0].message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Textt"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "749f5921-85a7-4a9f-b4a8-a44866a8d935",
+                    "leftValue": "={{ $json.body.entry[0].messaging[0].message.attachments[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voicee"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a35fb6ff-2fec-4203-b6d3-6db620c1a2fb",
+                    "leftValue": "={{ $json.body.entry[0].messaging[0].message.attachments[0].type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "photo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        -608
+      ],
+      "id": "c452ef55-9414-43a4-a79e-87fa4149454c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1632,
+        -592
+      ],
+      "id": "1e71a9d2-8d38-4169-b3ac-725af258bfe1",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c868b80f-7d71-4087-aaa4-7a3b2ade2f3f",
+              "name": "texxt",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1840,
+        -592
+      ],
+      "id": "84a1457e-c936-4ac4-8a16-932caf216f7c",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "options": {
+          "response_format": "opus"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        2736,
+        -656
+      ],
+      "id": "8d301127-91d9-4f8f-9c4e-352f9c5e0283",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1632,
+        -432
+      ],
+      "id": "bc510981-2a04-4b24-8960-a703bcd95671",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "efbaaad0-4a88-4ef1-adde-e1a2fd0914d9",
+              "leftValue": "={{ $('Webhook').item.json.body.entry[0].messaging[0].message.attachments[0].type }}",
+              "rightValue": "audio",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2432,
+        -592
+      ],
+      "id": "d44823df-6a5b-44c8-a998-0e3dcb400c4f",
+      "name": "if_audio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c868b80f-7d71-4087-aaa4-7a3b2ade2f3f",
+              "name": "texxt",
+              "value": "=# The author provided the image and the text\n## Image Description\n{{ $json['1'].content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1776,
+        -432
+      ],
+      "id": "37e0ca23-b1c7-469f-9a39-c8b15f0077c5",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "content": "# Inputs",
+        "height": 464,
+        "width": 1232
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        816,
+        -752
+      ],
+      "id": "dcc2bd15-e20c-4c62-a5db-b20236597f72",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Text",
+        "height": 96,
+        "width": 720,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -736
+      ],
+      "id": "32cfaae7-5b6b-4bc3-a8f1-2a70f86092a7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Audio",
+        "height": 96,
+        "width": 720,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -592
+      ],
+      "id": "42b42060-ed29-495f-8df0-1894bbffc223",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Image",
+        "height": 96,
+        "width": 720,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -432
+      ],
+      "id": "542401ec-fd49-429f-ae9c-85816e1f1fe9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# OrchAgent",
+        "height": 464,
+        "width": 576,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        -752
+      ],
+      "id": "e64b95f0-b583-4112-8ac7-ca765043c8b5",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# Outputs",
+        "height": 464,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        -752
+      ],
+      "id": "cdcde795-985d-4427-bbfc-9de87da316e4",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        2496,
+        -416
+      ],
+      "id": "07641c1f-a1d9-40c7-a622-448d14f51389",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "content": "# Text",
+        "height": 176,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        -704
+      ],
+      "id": "ab5bba4a-04ed-429a-b292-fd9f9d4d4097",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "# voice",
+        "height": 176,
+        "width": 416,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        -512
+      ],
+      "id": "9427c6f6-0966-45e8-be48-05fb51991167",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "toolDescription": "call this tool when you wanna do anything related to social media",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "You are SOCIAL_MEDIA, a specialist sub-agent responsible for managing the user's social media content tracking. You are invoked by the orchestrating assistant with a specific instruction and your output is relayed back to the user, so it must be clear and complete.\n\n## YOUR TOOL\n- **Append or update row in sheet** — adds a new row or updates an existing row in the user's content-tracking spreadsheet (e.g., logging posts, captions, platforms, statuses, dates, links, or performance notes).\n\n## OPERATING RULES\n1. **Determine append vs. update.** If the instruction describes a brand-new post/item with no existing record, append a new row. If it references an existing entry (by title, date, platform, or explicit reference), update the matching row instead of duplicating it.\n2. **Structure data consistently.** Populate fields (e.g., date, platform, content/caption, status, link, notes) as cleanly and consistently as the instruction and available data allow. Do not leave fields ambiguous — if a field's value isn't provided and isn't inferable, leave it blank rather than guessing.\n3. **Never fabricate content.** Only log what was explicitly provided in the instruction. Do not invent captions, dates, metrics, or statuses.\n4. **Confirm the outcome** in your reply — what was logged/updated and where (e.g., \"Added a new row for the Instagram post scheduled Aug 27\" / \"Updated status of the LinkedIn post from 'Draft' to 'Published'\").\n5. **Flag ambiguity instead of guessing** — if it's unclear which row to update or what value belongs in a field, report that back rather than making an assumption that could corrupt the tracking sheet.\n\n## CONSTRAINTS\n- You only manage the content-tracking sheet. You do not actually publish posts to social platforms — you are a record-keeping/tracking specialist. If asked to do something beyond logging/updating tracked data, report that it's out of scope.\n- Keep replies short and factual — confirm the action, not a narrative."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        2256,
+        -208
+      ],
+      "id": "bedeae9b-eadf-4961-8129-eee608e26056",
+      "name": "social_media"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        -32
+      ],
+      "id": "b4b82705-3d69-42a8-8c76-5f72106aac42",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1KEGuE17ZEE5ejdQvENjtnCUgP59S7cznC-pMifPTSxY",
+          "mode": "list",
+          "cachedResultName": "socialll",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KEGuE17ZEE5ejdQvENjtnCUgP59S7cznC-pMifPTSxY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "الورقة1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KEGuE17ZEE5ejdQvENjtnCUgP59S7cznC-pMifPTSxY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "posts": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('posts', ``, 'string') }}",
+            "theme": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('theme', ``, 'string') }}",
+            "date": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "posts"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "theme",
+              "displayName": "theme",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "posts",
+              "displayName": "posts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2480,
+        -64
+      ],
+      "id": "13f9a7af-8508-49b4-9aa0-07228aa1c7ba",
+      "name": "Append or update row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9GKTQDzzZ5h41NxF",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# SocialMedia",
+        "height": 368,
+        "width": 576,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        -272
+      ],
+      "id": "71034765-22b8-4c5b-86b1-8fb193b2b544",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "toolDescription": "call this tool when you wanna do anything related to mails",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "You are MAIL_CONTROLLER, a specialist sub-agent responsible for all email operations on the user's behalf. You are invoked by the orchestrating assistant with a specific, self-contained instruction — you do not interact with the end user directly, but your output is relayed back to them, so it must be clear and complete.\n\n## YOUR TOOLS\n- **send** — compose and send a new email.\n- **get** — retrieve/read email(s) (e.g., inbox, a specific sender, a specific thread).\n- **delete** — delete an email.\n- **mark read** — mark an email as read.\n- **mark unread** — mark an email as unread.\n- **reply** — reply within an existing thread.\n\n## OPERATING RULES\n1. **Match the tool to the exact intent.** Do not \"get\" when asked to \"reply,\" do not \"send\" a new email when the intent was to \"reply\" to an existing thread — check the instruction for thread/context references.\n2. **Before send/delete/reply**, make sure you have the necessary details (recipient, subject, body for send; which email for delete/reply). If a required detail is missing and cannot be reasonably inferred from the instruction, do not guess — report back exactly what's missing instead of executing.\n3. **Compose professionally.** When drafting a new email or reply on the user's behalf, use clear, professional, courteous language appropriate to context. Keep the tone matched to what a reasonable person in the user's position would send. Do not add unnecessary filler or overly formal boilerplate unless the content calls for it.\n4. **Never fabricate email content.** When asked to \"get\" or summarize emails, only report what the tool actually returns. Never invent senders, subjects, or message content.\n5. **Summarize retrieved emails concisely** — sender, subject, and a short summary of content, not full raw dumps, unless explicitly asked for the full text.\n6. **Irreversible actions (delete, send)** should only be executed exactly as instructed. If the instruction is ambiguous about which email to act on (e.g., multiple matches), report the ambiguity back rather than picking one.\n7. **Report outcome clearly** — confirm what action was taken (e.g., \"Sent to jane@example.com, subject: Q3 Update\" / \"Deleted the email from Amazon dated Aug 20\" / \"Found 3 unread emails from...\"). If the action failed, state the failure plainly.\n\n## CONSTRAINTS\n- You only perform actions related to email. If the instruction asks for something outside email (e.g., social media, general research), do not attempt it — report that it's out of scope.\n- Never expose raw API/tool errors verbatim; translate them into a plain-language explanation of what went wrong."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1296,
+        -224
+      ],
+      "id": "4765ad93-67b1-499a-8514-0d936a0562ee",
+      "name": "Mail_Controller"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "o4-mini",
+          "mode": "list",
+          "cachedResultName": "o4-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        976,
+        -64
+      ],
+      "id": "26d7eafc-4b5d-4e4e-93b5-840402a44efc",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -64
+      ],
+      "id": "78043e2e-3804-434e-81c3-b64234f3af89",
+      "name": "send",
+      "webhookId": "1a64bf5c-9cf7-4752-adde-e2eea9d05700",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GQ1yYmWMr8lGfm7H",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "simple": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify', ``, 'boolean') }}",
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1232,
+        -64
+      ],
+      "id": "ad7b44eb-9d82-4813-a70f-1677b63b5703",
+      "name": "get",
+      "webhookId": "1a64bf5c-9cf7-4752-adde-e2eea9d05700",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GQ1yYmWMr8lGfm7H",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        -64
+      ],
+      "id": "04757b40-3d85-4414-95e6-71eb43e5eabb",
+      "name": "delete",
+      "webhookId": "1a64bf5c-9cf7-4752-adde-e2eea9d05700",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GQ1yYmWMr8lGfm7H",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        -64
+      ],
+      "id": "d93d5902-c010-4437-85cd-add9a3c9aabe",
+      "name": "mark read",
+      "webhookId": "1a64bf5c-9cf7-4752-adde-e2eea9d05700",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GQ1yYmWMr8lGfm7H",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsUnread",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1632,
+        -64
+      ],
+      "id": "cdc47295-42f4-4767-b580-e25c98f706ef",
+      "name": "mark unread",
+      "webhookId": "1a64bf5c-9cf7-4752-adde-e2eea9d05700",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GQ1yYmWMr8lGfm7H",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        -64
+      ],
+      "id": "29731894-00fa-43f2-96da-2ee1b012676d",
+      "name": "reply",
+      "webhookId": "1a64bf5c-9cf7-4752-adde-e2eea9d05700",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GQ1yYmWMr8lGfm7H",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# MailController",
+        "height": 368,
+        "width": 1232,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        816,
+        -272
+      ],
+      "id": "4ed50fa8-eff6-4563-85af-a3dec8241d32",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "toolDescription": "call this tool when you wanna do anything related to searching",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "You are SEARCHING, a specialist research sub-agent. You are invoked by the orchestrating assistant with a specific question or research request, and your output is relayed back to the user — so it must be accurate, well-sourced, and concise.\n\n## YOUR TOOLS\n- **Wikipedia** — for general knowledge, definitions, historical facts, background on people/places/concepts/organizations.\n- **Google search (via SerpApi)** — for current events, real-time information, specific/recent facts, or anything Wikipedia is unlikely to cover well.\n\n## OPERATING RULES\n1. **Choose the right tool for the query.** Use Wikipedia first for stable, encyclopedic knowledge. Use Google search for anything time-sensitive, current, niche, or requiring the latest information (news, prices, releases, current holders of a position, recent events).\n2. **Use both when needed.** For questions with both a factual/background component and a current-status component, query both and synthesize.\n3. **Never answer from memory alone if the request calls for current or verifiable information** — always use a tool for facts you're not certain remain accurate today.\n4. **Synthesize, don't dump.** Return a clear, direct answer to the actual question asked, not a raw list of search results. Pull out only the relevant facts.\n5. **Be explicit about uncertainty.** If sources conflict or the answer isn't clearly determinable, say so rather than picking one version confidently.\n6. **Cite briefly** where useful (e.g., \"According to Wikipedia...\" / \"Recent reports indicate...\"), without overloading the reply with links or excessive attribution — this will typically be read or heard by the end user in a conversational context.\n7. **If nothing relevant is found**, state that plainly rather than fabricating an answer.\n\n## CONSTRAINTS\n- You only perform research/lookup tasks. You do not take actions (no sending emails, no modifying sheets) — if asked to do so, report that it's out of scope.\n- Keep the final answer concise — a few sentences to a short paragraph, not an essay, unless the requesting instruction explicitly asks for depth or detail."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        2784,
+        -240
+      ],
+      "id": "bb7c64f5-f4fb-4da3-b712-fc77472b84d0",
+      "name": "AI Agent Tool"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2688,
+        -64
+      ],
+      "id": "d1884ed9-7ace-42a9-a379-3ecca845cbf8",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "tVd01Hq2lPeozi98",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "typeVersion": 1,
+      "position": [
+        2816,
+        -64
+      ],
+      "id": "25de5991-086d-4c65-9418-ce01734fb58c",
+      "name": "Wikipedia"
+    },
+    {
+      "parameters": {
+        "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Location__location_', ``, 'string') }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApiTool",
+      "typeVersion": 1,
+      "position": [
+        2960,
+        -64
+      ],
+      "id": "0dc3f74f-bf29-4a8c-b753-3c2adbec7216",
+      "name": "Google search in SerpApi",
+      "credentials": {
+        "serpApi": {
+          "id": "kGR5LIWj2JZdvFz3",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Searching",
+        "height": 368,
+        "width": 416,
+        "color": "#494141"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        -272
+      ],
+      "id": "493cf218-1966-4f2e-8b3b-50475ef72099",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c868b80f-7d71-4087-aaa4-7a3b2ade2f3f",
+              "name": "texxt",
+              "value": "={{ $json.body.entry[0].messaging[0].message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1616,
+        -736
+      ],
+      "id": "743ffee9-51b7-424c-9f81-2da59591aa74",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v26.0/{{ $('Webhook').item.json.body.entry[0].messaging[0].recipient.id }}/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "EAAPyXPb5q8EBSaNjzNiRrNIip3ZARGFRqpYxkU1VyI1uWiuVyY6dtzZC5AZCCkdfo8fzD4JZAuWIZCYoIZBu7AZBXpACGL18hDTe6H3tmn13B7E9910gsVaYy8oBfPNh254gvDBICDiTFQBQJegb0OXbB97CuZB8BuwYiXzPy0S56sZBUSST1zcN8wHst7tstOSZAynKTYAAZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"recipient\": {\n    \"id\": \"{{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"messaging_type\": \"RESPONSE\",\n  \"message\": {\n    \"text\": {{ JSON.stringify($('AI Agent').item.json.output) }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2816,
+        -464
+      ],
+      "id": "6dc31be6-88b2-4604-80c4-21d7bffd6153",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.entry[0].messaging[0].message.attachments[0].payload.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1440,
+        -592
+      ],
+      "id": "b0f5a133-fb35-476e-873e-9be4c33b9bc6",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v26.0/me/messages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "EAAPyXPb5q8EBSaNjzNiRrNIip3ZARGFRqpYxkU1VyI1uWiuVyY6dtzZC5AZCCkdfo8fzD4JZAuWIZCYoIZBu7AZBXpACGL18hDTe6H3tmn13B7E9910gsVaYy8oBfPNh254gvDBICDiTFQBQJegb0OXbB97CuZB8BuwYiXzPy0S56sZBUSST1zcN8wHst7tstOSZAynKTYAAZDZD"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "recipient",
+              "value": "={\"id\":{{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}}"
+            },
+            {
+              "name": "=message",
+              "value": "={\"attachment\":{\"type\":\"{{ $json.fileType }}\", \"payload\":{}}}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "={{ $json.fileName }}",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2928,
+        -656
+      ],
+      "id": "c4156119-a4fa-4b13-909e-2c5cae3281e1",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.entry[0].messaging[0].message.attachments[0].payload.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1408,
+        -432
+      ],
+      "id": "ae50e4b4-fb88-42ef-a85a-53b1e7a03764",
+      "name": "HTTP Request3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "if_audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "if_audio": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "social_media": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "social_media",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "social_media",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail_Controller": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark read": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mark unread": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "reply": {
+      "ai_tool": [
+        [
+          {
+            "node": "Mail_Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent Tool",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search in SerpApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7f146633-662e-45a1-ac8f-4ec4b6269876",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3d29e02655670bf5bd089bf9e6d750c92faa48f150372a219d4492f897ade45d"
+  },
+  "nodeGroups": [],
+  "id": "6WGjiXOjDIa1yATo",
+  "tags": []
+}
