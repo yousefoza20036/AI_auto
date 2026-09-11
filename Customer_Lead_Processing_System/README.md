@@ -11,7 +11,6 @@ An n8n workflow that receives customer leads via webhook, validates and normaliz
 ## 1. Architecture
 
 ```
-start from now
 Webhook (POST)
   → Validate & Normalize Lead (Code)
     → Is Valid Lead? (IF)
