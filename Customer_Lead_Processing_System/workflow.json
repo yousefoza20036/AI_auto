@@ -5,10 +5,10 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-08-30T20:02:32.409Z",
-  "updatedAt": "2026-09-11T23:46:43.847Z",
+  "updatedAt": "2026-09-11T23:47:25.767Z",
   "isArchived": false,
-  "versionId": "d5cf1ca2-de6f-4bd1-b185-98f93b41542b",
-  "versionCounter": 6,
+  "versionId": "1284116c-2c12-4b24-9cfe-16863f9602f4",
+  "versionCounter": 7,
   "sourceWorkflowId": null,
   "triggerCount": 0,
   "nodes": [
@@ -24,8 +24,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -1008,
-        -64
+        -1200,
+        432
       ],
       "webhookId": "23254509-4dd0-4740-a069-531411328f3e"
     },
@@ -370,23 +370,18 @@
         1088,
         208
       ]
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -1120,
-        176
-      ],
-      "id": "e1ca9087-0e9b-444f-8e4f-f6a8b674b378",
-      "name": "When clicking ‘Execute workflow’"
     }
   ],
   "connections": {
     "Webhook - New Lead": {
       "main": [
-        []
+        [
+          {
+            "node": "Validate & Normalize Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Validate & Normalize Lead": {
@@ -514,17 +509,6 @@
         [
           {
             "node": "Respond - Lead Processed",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "When clicking ‘Execute workflow’": {
-      "main": [
-        [
-          {
-            "node": "Validate & Normalize Lead",
             "type": "main",
             "index": 0
           }
