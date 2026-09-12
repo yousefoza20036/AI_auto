@@ -1,0 +1,473 @@
+{
+  "id": "3nIu1nPFg6H9JLfx",
+  "name": "GitHub_sync_rep",
+  "description": null,
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-11T22:32:25.367Z",
+  "updatedAt": "2026-09-12T00:00:57.829Z",
+  "isArchived": false,
+  "versionId": "f37e8859-3007-4744-b107-8cb36984e4f8",
+  "versionCounter": 46,
+  "sourceWorkflowId": null,
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Sync n8n Workflow to GitHub",
+        "formDescription": "Pick which project to push. You can also optionally attach a README and/or screenshots to upload alongside the workflow.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Project",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "smart_restaurant_RAG"
+                  },
+                  {
+                    "option": "super_sec_agent_multitasker_messanger"
+                  },
+                  {
+                    "option": "Customer_Lead_Processing_System"
+                  },
+                  {
+                    "option": "GitHub_sync_rep"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Additional Files",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "form_trigger",
+      "name": "Select Project",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -400,
+        0
+      ],
+      "webhookId": "fd15227b-b465-4e20-82b1-b0ad63b8663b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst project = input.json['Project'];\n\nconst map = {\n  smart_restaurant_RAG: {\n    workflowId: 'Fi9bf1rTHXqu0YTf',\n    repoFolder: 'smart_restaurant_RAG'\n  },\n  super_sec_agent_multitasker_messanger: {\n    workflowId: '6WGjiXOjDIa1yATo',\n    repoFolder: 'messenger-multiagent-assistant'\n  },\n  Customer_Lead_Processing_System: {\n    workflowId: 'VMKBvj7hpL0jvHXS',\n    repoFolder: 'Customer_Lead_Processing_System'\n  },\n  GitHub_sync_rep: {\n    workflowId: '3nIu1nPFg6H9JLfx',\n    repoFolder: 'GitHub_sync_rep'\n  }\n  \n};\n\nconst selected = map[project];\nif (!selected) {\n  throw new Error(`Unknown project selected: ${project}`);\n}\n\nconst outItem = {\n  json: {\n    project,\n    workflowId: selected.workflowId,\n    repoFolder: selected.repoFolder,\n    filePath: `${selected.repoFolder}/workflow.json`\n  }\n};\n\nif (input.binary) {\n  outItem.binary = input.binary;\n}\n\nreturn [outItem];"
+      },
+      "id": "map_project",
+      "name": "Map Project",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.workflowId }}"
+        },
+        "requestOptions": {}
+      },
+      "id": "get_workflow_json",
+      "name": "Get Workflow JSON",
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        80,
+        0
+      ],
+      "credentials": {
+        "n8nApi": {
+          "id": "QkJ7vV1EjyHsc59o",
+          "name": "n8n account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const workflowJson = $input.first().json;\nconst filePath = $('Map Project').item.json.filePath;\nconst project = $('Map Project').item.json.project;\nconst content = JSON.stringify(workflowJson, null, 2);\nconst now = new Date().toISOString();\n\nreturn [{\n  json: {\n    filePath,\n    project,\n    content,\n    commitMessage: `Sync ${project} workflow — ${now}`\n  }\n}];"
+      },
+      "id": "prepare_content",
+      "name": "Prepare File Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "yousefoza20036"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "AI_auto"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "asBinaryProperty": false,
+        "additionalParameters": {}
+      },
+      "id": "check_file_exists",
+      "name": "Check File Exists",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        560,
+        0
+      ],
+      "webhookId": "ecc9eac8-5a17-4a22-98a2-4e59275afe2b",
+      "credentials": {
+        "githubApi": {
+          "id": "TFFicERxcpm2Awx7",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "yousefoza20036"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "AI_auto"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "fileContent": "={{ $json.content }}",
+        "commitMessage": "={{ $json.commitMessage }}"
+      },
+      "id": "update_file",
+      "name": "Update File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        -96
+      ],
+      "webhookId": "653db305-cd62-4bea-8626-96c91a259a23",
+      "credentials": {
+        "githubApi": {
+          "id": "TFFicERxcpm2Awx7",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "yousefoza20036"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "AI_auto"
+        },
+        "filePath": "={{ $('Prepare File Content').item.json.filePath }}",
+        "fileContent": "={{ $('Prepare File Content').item.json.content }}",
+        "commitMessage": "={{ $('Prepare File Content').item.json.commitMessage }}"
+      },
+      "id": "create_file",
+      "name": "Create File",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        112
+      ],
+      "webhookId": "135e683c-f8f3-417d-ac02-3afdd4c18ac8",
+      "credentials": {
+        "githubApi": {
+          "id": "TFFicERxcpm2Awx7",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst repoFolder = item.json.repoFolder;\nconst project = item.json.project;\nconst binaryKeys = Object.keys(item.binary || {});\n\nif (binaryKeys.length === 0) {\n  return [];\n}\n\nconst output = [];\nfor (const key of binaryKeys) {\n  const bin = item.binary[key];\n  const fileName = bin.fileName || key;\n  const mimeType = bin.mimeType || '';\n  let targetPath;\n  if (/^readme/i.test(fileName)) {\n    targetPath = `${repoFolder}/${fileName}`;\n  } else if (mimeType.startsWith('image/')) {\n    targetPath = `${repoFolder}/screenshots/${fileName}`;\n  } else {\n    targetPath = `${repoFolder}/${fileName}`;\n  }\n  output.push({\n    json: {\n      fileName,\n      filePath: targetPath,\n      commitMessage: `Add/update ${fileName} for ${project}`\n    },\n    binary: { file: bin }\n  });\n}\n\nreturn output;"
+      },
+      "id": "split_files",
+      "name": "Split Uploaded Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "yousefoza20036"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "AI_auto"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "binaryData": true,
+        "binaryPropertyName": "file",
+        "commitMessage": "={{ $json.commitMessage }}"
+      },
+      "id": "update_file_upload",
+      "name": "Update File (Upload)",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        208
+      ],
+      "webhookId": "4f7e49eb-aa6b-47c3-814a-13a0e04e34dd",
+      "credentials": {
+        "githubApi": {
+          "id": "TFFicERxcpm2Awx7",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "yousefoza20036"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "AI_auto"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "binaryData": true,
+        "binaryPropertyName": "file",
+        "commitMessage": "={{ $json.commitMessage }}"
+      },
+      "id": "create_file_upload",
+      "name": "Create File (Upload)",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        400
+      ],
+      "webhookId": "d5056fc3-f4a8-4055-8889-134fcacbba22",
+      "credentials": {
+        "githubApi": {
+          "id": "TFFicERxcpm2Awx7",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const errJson = $input.first().json;\nconst original = $('Split Uploaded Files').item;\n\nreturn [{\n  json: {\n    fileName: errJson.fileName,\n    filePath: errJson.filePath,\n    commitMessage: errJson.commitMessage\n  },\n  binary: original.binary\n}];"
+      },
+      "id": "reattach_binary",
+      "name": "Reattach Binary for Create",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const existing = $input.first().json;\nconst prepared = $('Prepare File Content').item.json;\n\nlet existingContent = '';\nif (existing.content) {\n  existingContent = Buffer.from(existing.content, 'base64').toString('utf-8');\n}\n\nif (existingContent.trim() === prepared.content.trim()) {\n  // No real change - skip the commit entirely\n  return [];\n}\n\nreturn [{ json: prepared }];"
+      },
+      "id": "compare_content",
+      "name": "Compare Workflow Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "Select Project": {
+      "main": [
+        [
+          {
+            "node": "Map Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Project": {
+      "main": [
+        [
+          {
+            "node": "Get Workflow JSON",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Uploaded Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Workflow JSON": {
+      "main": [
+        [
+          {
+            "node": "Prepare File Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare File Content": {
+      "main": [
+        [
+          {
+            "node": "Check File Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check File Exists": {
+      "main": [
+        [
+          {
+            "node": "Compare Workflow Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Uploaded Files": {
+      "main": [
+        [
+          {
+            "node": "Update File (Upload)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update File (Upload)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Reattach Binary for Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reattach Binary for Create": {
+      "main": [
+        [
+          {
+            "node": "Create File (Upload)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Workflow Content": {
+      "main": [
+        [
+          {
+            "node": "Update File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "3nIu1nPFg6H9JLfx",
+      "projectId": "q9I8u5bmFG1HRKbv",
+      "project": {
+        "id": "q9I8u5bmFG1HRKbv",
+        "name": "Yousef Mohamed <yousefoza12@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "customTelemetryTags": [],
+        "creatorId": "9b99517c-fb91-464a-972f-0bfdcd10d8ff",
+        "createdAt": "2026-08-06T04:19:43.096Z",
+        "updatedAt": "2026-08-06T04:21:30.876Z"
+      },
+      "createdAt": "2026-09-11T22:32:25.370Z",
+      "updatedAt": "2026-09-11T22:32:25.370Z"
+    }
+  ],
+  "activeVersion": null
+}
