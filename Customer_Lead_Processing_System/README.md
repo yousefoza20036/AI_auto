@@ -1,4 +1,4 @@
-# Customer Lead Processing System () ,kkff
+# Customer Lead Processing System
 
 An n8n workflow that receives customer leads via webhook, validates and normalizes the data, scores lead priority (HIGH / MEDIUM / LOW), routes each branch accordingly, and stores the result in a database.
 
