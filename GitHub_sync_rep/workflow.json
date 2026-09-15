@@ -5,10 +5,10 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-09-11T22:32:25.367Z",
-  "updatedAt": "2026-09-15T02:37:38.011Z",
+  "updatedAt": "2026-09-15T02:58:51.012Z",
   "isArchived": false,
-  "versionId": "6a698ef2-7fd5-4a07-be99-2f0f72aea2ec",
-  "versionCounter": 62,
+  "versionId": "e37349cf-162b-4947-adaa-4e23ec4e1450",
+  "versionCounter": 63,
   "sourceWorkflowId": null,
   "triggerCount": 0,
   "nodes": [
@@ -281,8 +281,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        224,
-        448
+        144,
+        400
       ],
       "webhookId": "d5056fc3-f4a8-4055-8889-134fcacbba22",
       "credentials": {
@@ -367,6 +367,9 @@
       ]
     },
     {
+      "parameters": {
+        "jsCode": "const inputs = $input.all();\nconst output = [];\n\nfor (let i = 0; i < inputs.length; i++) {\n  const existing = inputs[i];\n  const uploaded = $('Split Uploaded Files').itemMatching(i);\n\n  output.push({\n    json: {\n      fileName: uploaded.json.fileName,\n      filePath: uploaded.json.filePath,\n      commitMessage: uploaded.json.commitMessage,\n      existingContent: existing.json.content || ''\n    },\n    binary: uploaded.binary\n  });\n}\n\nreturn output;"
+      },
       "id": "reattach_binary_compare",
       "name": "Reattach Binary for Compare",
       "type": "n8n-nodes-base.code",
@@ -374,10 +377,7 @@
       "position": [
         128,
         144
-      ],
-      "parameters": {
-        "jsCode": "const inputs = $input.all();\nconst output = [];\n\nfor (let i = 0; i < inputs.length; i++) {\n  const existing = inputs[i];\n  const uploaded = $('Split Uploaded Files').itemMatching(i);\n\n  output.push({\n    json: {\n      fileName: uploaded.json.fileName,\n      filePath: uploaded.json.filePath,\n      commitMessage: uploaded.json.commitMessage,\n      existingContent: existing.json.content || ''\n    },\n    binary: uploaded.binary\n  });\n}\n\nreturn output;"
-      }
+      ]
     }
   ],
   "connections": {
