@@ -5,10 +5,10 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-09-11T22:32:25.367Z",
-  "updatedAt": "2026-09-12T00:00:57.829Z",
+  "updatedAt": "2026-09-15T02:37:38.011Z",
   "isArchived": false,
-  "versionId": "f37e8859-3007-4744-b107-8cb36984e4f8",
-  "versionCounter": 46,
+  "versionId": "6a698ef2-7fd5-4a07-be99-2f0f72aea2ec",
+  "versionCounter": 62,
   "sourceWorkflowId": null,
   "triggerCount": 0,
   "nodes": [
@@ -166,7 +166,7 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        832,
+        976,
         -96
       ],
       "webhookId": "653db305-cd62-4bea-8626-96c91a259a23",
@@ -247,8 +247,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        320,
-        208
+        576,
+        224
       ],
       "webhookId": "4f7e49eb-aa6b-47c3-814a-13a0e04e34dd",
       "credentials": {
@@ -256,8 +256,7 @@
           "id": "TFFicERxcpm2Awx7",
           "name": "GitHub account"
         }
-      },
-      "onError": "continueErrorOutput"
+      }
     },
     {
       "parameters": {
@@ -282,8 +281,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        320,
-        400
+        224,
+        448
       ],
       "webhookId": "d5056fc3-f4a8-4055-8889-134fcacbba22",
       "credentials": {
@@ -295,7 +294,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const errJson = $input.first().json;\nconst original = $('Split Uploaded Files').item;\n\nreturn [{\n  json: {\n    fileName: errJson.fileName,\n    filePath: errJson.filePath,\n    commitMessage: errJson.commitMessage\n  },\n  binary: original.binary\n}];"
+        "jsCode": "const inputs = $input.all();\nconst output = [];\n\nfor (let i = 0; i < inputs.length; i++) {\n  const errJson = inputs[i].json;\n  const original = $('Split Uploaded Files').itemMatching(i);\n\n  output.push({\n    json: {\n      fileName: errJson.fileName,\n      filePath: errJson.filePath,\n      commitMessage: errJson.commitMessage\n    },\n    binary: original.binary\n  });\n}\n\nreturn output;"
       },
       "id": "reattach_binary",
       "name": "Reattach Binary for Create",
@@ -315,9 +314,70 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        704,
+        752,
         -96
       ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "yousefoza20036"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "AI_auto"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "asBinaryProperty": false,
+        "additionalParameters": {}
+      },
+      "id": "445ce5d6-a9fc-48e0-b772-a737274d9c4f",
+      "name": "Check File Exists1",
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        208
+      ],
+      "webhookId": "ecc9eac8-5a17-4a22-98a2-4e59275afe2b",
+      "credentials": {
+        "githubApi": {
+          "id": "TFFicERxcpm2Awx7",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const existingBase64 = (item.json.existingContent || '').replace(/\\s/g, '');\n\n  const buffer = await this.helpers.getBinaryDataBuffer(i, 'file');\n  const uploadedBase64 = buffer.toString('base64');\n\n  if (!existingBase64 || !uploadedBase64) {\n    throw new Error(`Could not read file content for ${item.json.fileName || 'unknown file'}`);\n  }\n\n  // Same file -> skip it, no commit needed\n  if (existingBase64 === uploadedBase64) {\n    continue;\n  }\n\n  // Different -> send it to Update File\n  output.push({\n    json: {\n      filePath: item.json.filePath,\n      commitMessage: item.json.commitMessage\n    },\n    binary: { file: items[i].binary.file }\n  });\n}\n\nreturn output;"
+      },
+      "id": "c4399c5b-5797-474e-adc9-4a41b04832d5",
+      "name": "Compare files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        144
+      ]
+    },
+    {
+      "id": "reattach_binary_compare",
+      "name": "Reattach Binary for Compare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        144
+      ],
+      "parameters": {
+        "jsCode": "const inputs = $input.all();\nconst output = [];\n\nfor (let i = 0; i < inputs.length; i++) {\n  const existing = inputs[i];\n  const uploaded = $('Split Uploaded Files').itemMatching(i);\n\n  output.push({\n    json: {\n      fileName: uploaded.json.fileName,\n      filePath: uploaded.json.filePath,\n      commitMessage: uploaded.json.commitMessage,\n      existingContent: existing.json.content || ''\n    },\n    binary: uploaded.binary\n  });\n}\n\nreturn output;"
+      }
     }
   ],
   "connections": {
@@ -392,7 +452,7 @@
       "main": [
         [
           {
-            "node": "Update File (Upload)",
+            "node": "Check File Exists1",
             "type": "main",
             "index": 0
           }
@@ -402,13 +462,7 @@
     "Update File (Upload)": {
       "main": [
         [],
-        [
-          {
-            "node": "Reattach Binary for Create",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Reattach Binary for Create": {
@@ -427,6 +481,46 @@
         [
           {
             "node": "Update File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check File Exists1": {
+      "main": [
+        [
+          {
+            "node": "Reattach Binary for Compare",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reattach Binary for Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare files": {
+      "main": [
+        [
+          {
+            "node": "Update File (Upload)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reattach Binary for Compare": {
+      "main": [
+        [
+          {
+            "node": "Compare files",
             "type": "main",
             "index": 0
           }
