@@ -1,4 +1,4 @@
-# 🔄 n8n → GitHub Auto-Sync ())(( fienfie))efefef
+# 🔄 n8n → GitHub Auto-Sync
 
 **Stop exporting workflow JSON by hand.** One click, and your n8n workflow, README, and screenshots land in GitHub — with zero duplicate commits and zero manual file wrangling.
 
