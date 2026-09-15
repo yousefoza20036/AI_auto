@@ -5,10 +5,10 @@
   "active": false,
   "activeVersionId": null,
   "createdAt": "2026-09-11T22:32:25.367Z",
-  "updatedAt": "2026-09-15T02:58:51.012Z",
+  "updatedAt": "2026-09-15T03:08:35.093Z",
   "isArchived": false,
-  "versionId": "e37349cf-162b-4947-adaa-4e23ec4e1450",
-  "versionCounter": 63,
+  "versionId": "9bf9b8ba-5b99-4c37-82c0-5077d50b4fb4",
+  "versionCounter": 175,
   "sourceWorkflowId": null,
   "triggerCount": 0,
   "nodes": [
@@ -52,8 +52,8 @@
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.6,
       "position": [
-        -400,
-        0
+        -448,
+        -16
       ],
       "webhookId": "fd15227b-b465-4e20-82b1-b0ad63b8663b"
     },
@@ -66,8 +66,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -160,
-        0
+        -240,
+        -16
       ]
     },
     {
@@ -85,7 +85,7 @@
       "type": "n8n-nodes-base.n8n",
       "typeVersion": 1,
       "position": [
-        80,
+        -16,
         0
       ],
       "credentials": {
@@ -104,7 +104,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        320,
+        160,
         0
       ]
     },
@@ -131,8 +131,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        560,
-        0
+        336,
+        32
       ],
       "webhookId": "ecc9eac8-5a17-4a22-98a2-4e59275afe2b",
       "credentials": {
@@ -166,8 +166,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        976,
-        -96
+        912,
+        -112
       ],
       "webhookId": "653db305-cd62-4bea-8626-96c91a259a23",
       "credentials": {
@@ -199,8 +199,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        832,
-        112
+        912,
+        64
       ],
       "webhookId": "135e683c-f8f3-417d-ac02-3afdd4c18ac8",
       "credentials": {
@@ -219,8 +219,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -160,
-        304
+        0,
+        240
       ]
     },
     {
@@ -247,8 +247,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        576,
-        224
+        720,
+        272
       ],
       "webhookId": "4f7e49eb-aa6b-47c3-814a-13a0e04e34dd",
       "credentials": {
@@ -281,8 +281,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        144,
-        400
+        720,
+        512
       ],
       "webhookId": "d5056fc3-f4a8-4055-8889-134fcacbba22",
       "credentials": {
@@ -301,8 +301,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        560,
-        400
+        512,
+        512
       ]
     },
     {
@@ -314,8 +314,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        752,
-        -96
+        704,
+        -112
       ]
     },
     {
@@ -341,8 +341,8 @@
       "type": "n8n-nodes-base.github",
       "typeVersion": 1.1,
       "position": [
-        16,
-        208
+        80,
+        480
       ],
       "webhookId": "ecc9eac8-5a17-4a22-98a2-4e59275afe2b",
       "credentials": {
@@ -362,8 +362,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        272,
-        144
+        512,
+        272
       ]
     },
     {
@@ -375,9 +375,118 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        128,
-        144
+        320,
+        272
       ]
+    },
+    {
+      "parameters": {
+        "content": "# Select Project",
+        "height": 336,
+        "width": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "1bd1d17a-916e-478b-8076-68877964f9b1",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# File Management",
+        "height": 448,
+        "width": 1664,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -512,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "b0e8ba38-a1e8-4d02-8b1d-cb9c9e378814",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Update Files",
+        "height": 224,
+        "width": 608,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "1c147ba7-3673-4e64-bc58-0f1260ca502b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Create Files",
+        "height": 208,
+        "width": 608,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "a45211fa-2b17-4e0e-9854-ea77ea5b7703",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# Workflow updates",
+        "height": 336,
+        "width": 1200,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -48,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "f634d99d-1f0c-46d3-97e8-8cf605ce838c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# New Project",
+        "width": 624,
+        "color": "#662929"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "14ba13f0-5688-412c-b926-38495ce61513",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# Update Project",
+        "width": 624,
+        "color": "#3B3030"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "c5c57202-a5a9-42d4-ba97-8b6e0e1e7bc6",
+      "name": "Sticky Note6"
     }
   ],
   "connections": {
